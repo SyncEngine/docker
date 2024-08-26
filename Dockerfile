@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN set -eux; \
 	install-php-extensions \
 		@composer \
+    	gd \
 		apcu \
 		intl \
 		opcache \
