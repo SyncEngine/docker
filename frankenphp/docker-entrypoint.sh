@@ -6,7 +6,7 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	# After the installation, the following block can be deleted
 	if [ ! -f composer.json ]; then
 		rm -Rf tmp/
-		composer create-project "symfony/skeleton $SYMFONY_VERSION" tmp --stability="$STABILITY" --prefer-dist --no-progress --no-interaction --no-install
+		composer require symfony/orm-pack
 
 		cd tmp
 		cp -Rp . ..
