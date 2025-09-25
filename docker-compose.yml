@@ -1,0 +1,57 @@
+version: "3.9"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: nginx
+    depends_on:
+      - php
+    ports:
+      - "8080:80"
+    networks:
+      - app
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: fpm
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      DATABASE_URL: "sqlite:////app/var/data/data.db"
+    volumes:
+      - secrets_data:/app/config/secrets
+      - modules_data:/app/modules
+      - blueprints_data:/app/blueprints
+      - db_data:/app/var/data
+    networks:
+      - app
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: fpm
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      DATABASE_URL: "sqlite:////app/var/data/data.db"
+    command: ["php","bin/console","messenger:consume","--time-limit=3600","-vv"]
+    volumes:
+      - secrets_data:/app/config/secrets
+      - modules_data:/app/modules
+      - blueprints_data:/app/blueprints
+      - db_data:/app/var/data
+    networks:
+      - app
+
+networks:
+  app: {}
+
+volumes:
+  secrets_data: {}
+  modules_data: {}
+  blueprints_data: {}
+  db_data: {}
