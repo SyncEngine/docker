@@ -4,9 +4,13 @@ RUN docker-php-ext-install -j$(nproc) intl opcache pdo pdo_sqlite zip soap ftp s
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-ARG REPO=https://github.com/SyncEngine/SyncEngine.git
-ARG REF=master
-RUN git clone --depth 1 --branch ${REF} ${REPO} /app
+ARG ASSET_NAME=release.zip
+
+RUN set -e; \
+    mkdir -p /tmp/release; \
+    curl -fL "https://github.com/SyncEngine/SyncEngine/releases/latest/download/${ASSET_NAME}" -o /tmp/release.zip; \
+    unzip /tmp/release.zip -d /tmp/release; \
+    cp -a /tmp/release/. /app/
 
 RUN composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
 RUN if [ -f .env ]; then cp .env .env.local; fi
