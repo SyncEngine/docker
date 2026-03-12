@@ -1,5 +1,13 @@
 # SyncEngine – Docker
 
+
+## Install
+
+```bash
+git clone https://github.com/SyncEngine/docker.git
+```
+
+
 ## Start
 ```bash
 docker compose build
