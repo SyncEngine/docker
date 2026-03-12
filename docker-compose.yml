@@ -1,6 +1,7 @@
 version: "3.9"
+name: syncengine
 services:
-  web:
+  syncengine-server:
     build:
       context: .
       dockerfile: Dockerfile
