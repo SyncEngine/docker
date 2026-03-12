@@ -1,6 +1,6 @@
 name: syncengine
 services:
-  syncengine-server:
+  server:
     build:
       context: .
       dockerfile: Dockerfile
