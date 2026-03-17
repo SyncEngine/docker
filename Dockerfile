@@ -12,7 +12,27 @@ RUN set -e; \
     unzip /tmp/release.zip -d /tmp/release; \
     cp -a /tmp/release/. /app/
 
-RUN composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
+ARG APP_ENV=prod
+RUN if [ "$APP_ENV" = "dev" ]; then \
+      composer install --prefer-dist --no-progress --no-interaction; \
+      { \
+        echo "opcache.enable=1"; \
+        echo "opcache.enable_cli=0"; \
+        echo "opcache.validate_timestamps=1"; \
+        echo "opcache.revalidate_freq=0"; \
+      } > /usr/local/etc/php/conf.d/opcache.ini; \
+    else \
+      composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader; \
+      { \
+        echo "opcache.enable=1"; \
+        echo "opcache.enable_cli=0"; \
+        echo "opcache.validate_timestamps=0"; \
+        echo "opcache.jit=1255"; \
+        echo "opcache.jit_buffer_size=64M"; \
+        echo "opcache.memory_consumption=256"; \
+        echo "opcache.max_accelerated_files=20000"; \
+      } > /usr/local/etc/php/conf.d/opcache.ini; \
+    fi
 RUN if [ -f .env ]; then cp .env .env.local; fi
 RUN mkdir -p var/cache var/log var/data && chown -R www-data:www-data var
 RUN mkdir -p /app-default/secrets /app-default/modules /app-default/blueprints
@@ -45,7 +65,11 @@ COPY --from=build /app /app
 COPY --from=build /app-default /app-default
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
-RUN chown -R www-data:www-data /app/var
+
+RUN mkdir -p /app/var /app/config /app/modules /app/blueprints
+RUN touch /app/config/modules.yaml
+RUN chown -R www-data:www-data /app/var /app/config /app/modules /app/blueprints
+
 ENTRYPOINT ["entrypoint"]
 CMD ["php-fpm","-F"]
 

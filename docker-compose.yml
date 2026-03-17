@@ -17,9 +17,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: fpm
+      args:
+        APP_ENV: ${APP_ENV:-prod}
     environment:
-      APP_ENV: prod
-      APP_DEBUG: "0"
+      APP_ENV: ${APP_ENV:-prod}
+      APP_DEBUG: ${APP_DEBUG:-0}
       DATABASE_URL: "sqlite:////app/var/data/data.db"
     volumes:
       - secrets_data:/app/config/secrets
@@ -34,9 +36,11 @@ services:
       context: .
       dockerfile: Dockerfile
       target: fpm
+      args:
+        APP_ENV: ${APP_ENV:-prod}
     environment:
-      APP_ENV: prod
-      APP_DEBUG: "0"
+      APP_ENV: ${APP_ENV:-prod}
+      APP_DEBUG: ${APP_DEBUG:-0}
       DATABASE_URL: "sqlite:////app/var/data/data.db"
     command: ["php","bin/console","messenger:consume","--time-limit=3600","-vv"]
     volumes:
