@@ -23,6 +23,7 @@ services:
       APP_ENV: ${APP_ENV:-prod}
       APP_DEBUG: ${APP_DEBUG:-0}
       DATABASE_URL: "sqlite:////app/var/data/data.db"
+      RUN_AS_WWWDATA: "0"
     volumes:
       - secrets_data:/app/config/secrets
       - modules_data:/app/modules
@@ -42,6 +43,7 @@ services:
       APP_ENV: ${APP_ENV:-prod}
       APP_DEBUG: ${APP_DEBUG:-0}
       DATABASE_URL: "sqlite:////app/var/data/data.db"
+      RUN_AS_WWWDATA: "1"
     command: ["php","bin/console","messenger:consume","--time-limit=3600","-vv"]
     volumes:
       - secrets_data:/app/config/secrets
