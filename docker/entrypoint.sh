@@ -21,9 +21,31 @@ fi
 
 touch /app/config/modules.yaml /app/.env.local
 
-chown -R www-data:www-data /app/var
-chown -R www-data:www-data /app/config/secrets /app/modules /app/blueprints
+# If no APP_SECRET was provided, generate one once and persist it in the
+# secrets volume so it survives container recreation (a changing secret
+# would invalidate sessions, remember-me cookies and signed URLs).
+if [ -z "${APP_SECRET:-}" ]; then
+  if [ ! -s /app/config/secrets/.app_secret ]; then
+    php -r 'echo bin2hex(random_bytes(32));' > /app/config/secrets/.app_secret
+    chmod 600 /app/config/secrets/.app_secret
+  fi
+  APP_SECRET="$(cat /app/config/secrets/.app_secret)"
+  export APP_SECRET
+fi
+
+chown -R www-data:www-data /app/var /app/config/secrets
 chown www-data:www-data /app/config/modules.yaml /app/.env.local
+
+# Set CHOWN_MODULES=0 when bind-mounting local folders for development,
+# otherwise the ownership of your local files would be changed (see README)
+if [ "${CHOWN_MODULES:-1}" = "1" ]; then
+  chown -R www-data:www-data /app/modules /app/blueprints
+fi
+
+if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
+  echo "Running database migrations..."
+  gosu www-data php /app/bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+fi
 
 if [ "${RUN_AS_WWWDATA:-0}" = "1" ]; then
   exec gosu www-data "$@"
